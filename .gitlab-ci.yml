@@ -1,0 +1,109 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  POSTGRES_DB: elang_test_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  GO_VERSION: "1.23"
+
+# Test stage
+test:unit:
+  stage: test
+  image: golang:${GO_VERSION}
+  services:
+    - postgres:13
+    - name: minio/minio:latest
+      alias: minio
+      command: ["server", "/data"]
+  variables:
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    MINIO_ENDPOINT: minio:9000
+    MINIO_ACCESS_KEY: minioadmin
+    MINIO_SECRET_KEY: minioadmin
+  before_script:
+    - cd backend
+    - go mod download
+    - go get github.com/stretchr/testify
+    - go get gorm.io/driver/sqlite
+  script:
+    - go test ./test/... -v -coverprofile=coverage.out -covermode=atomic
+    - go tool cover -func=coverage.out
+  coverage: '/total:\s+\(statements\)\s+(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.out
+    paths:
+      - backend/coverage.out
+      - backend/coverage.html
+    expire_in: 1 week
+
+test:race:
+  stage: test
+  image: golang:${GO_VERSION}
+  before_script:
+    - cd backend
+    - go mod download
+  script:
+    - go test ./test/... -race
+  allow_failure: false
+
+# Lint stage
+lint:
+  stage: test
+  image: golang:${GO_VERSION}
+  before_script:
+    - cd backend
+    - go mod download
+  script:
+    - go fmt ./...
+    - go vet ./...
+  allow_failure: false
+
+# Build stage
+build:linux:
+  stage: build
+  image: golang:${GO_VERSION}
+  script:
+    - cd backend
+    - go build -o elang-backend-linux cmd/main.go
+  artifacts:
+    paths:
+      - backend/elang-backend-linux
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+
+build:windows:
+  stage: build
+  image: golang:${GO_VERSION}
+  script:
+    - cd backend
+    - GOOS=windows GOARCH=amd64 go build -o elang-backend.exe cmd/main.go
+  artifacts:
+    paths:
+      - backend/elang-backend.exe
+    expire_in: 1 month
+  only:
+    - main
+    - develop
+
+build:mac:
+  stage: build
+  image: golang:${GO_VERSION}
+  script:
+    - cd backend
+    - GOOS=darwin GOARCH=amd64 go build -o elang-backend-mac cmd/main.go
+  artifacts:
+    paths:
+      - backend/elang-backend-mac
+    expire_in: 1 month
+  only:
+    - main
+    - develop

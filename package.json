@@ -1,0 +1,24 @@
+{
+  "name": "elang",
+  "version": "1.0.0",
+  "description": "Dependency Security Monitoring Platform",
+  "scripts": {
+    "test": "newman run tests/Elang_API_Tests.postman_collection.json -e tests/Elang_Environment.postman_environment.json --reporters cli,html --reporter-html-export test-results.html",
+    "test:verbose": "newman run tests/Elang_API_Tests.postman_collection.json -e tests/Elang_Environment.postman_environment.json --verbose",
+    "test:report": "bash tests/scripts/test-report.sh",
+    "test:ci": "newman run tests/Elang_API_Tests.postman_collection.json -e tests/Elang_Environment.postman_environment.json --reporters cli,json --reporter-json-export test-results.json"
+  },
+  "keywords": [
+    "security",
+    "dependency",
+    "monitoring",
+    "SBOM",
+    "vulnerability"
+  ],
+  "author": "Elang Team",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.0.0",
+    "newman-reporter-htmlextra": "^1.23.0"
+  }
+}

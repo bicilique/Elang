@@ -1,0 +1,525 @@
+{
+  "info": {
+    "name": "Elang API Tests",
+    "description": "Comprehensive API test suite for Elang Dependency Security Monitoring Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1234567"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Check API Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has correct structure', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('service');",
+                  "    pm.expect(jsonData).to.have.property('version');",
+                  "    pm.expect(jsonData.status).to.eql('healthy');",
+                  "});",
+                  "",
+                  "pm.test('Features are enabled', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.features).to.have.property('enhanced_security_detection', true);",
+                  "    pm.expect(jsonData.features).to.have.property('progressive_monitoring', true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Application Management",
+      "item": [
+        {
+          "name": "Add Node.js Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Application created successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "    pm.expect(jsonData.data).to.have.property('app_id');",
+                  "    ",
+                  "    // Save app_id for future tests",
+                  "    pm.environment.set('test_app_id', jsonData.data.app_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "app_name",
+                  "value": "test-nodejs-app",
+                  "type": "text"
+                },
+                {
+                  "key": "runtime_type",
+                  "value": "nodejs",
+                  "type": "text"
+                },
+                {
+                  "key": "framework",
+                  "value": "express",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Test Node.js application for API testing",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "sample-files/package.json"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/add",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "add"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List All Applications",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/applications/list",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "list"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application Dependencies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains dependencies', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{test_app_id}}/list",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "{{test_app_id}}", "list"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{test_app_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "{{test_app_id}}", "status"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dependency Management",
+      "item": [
+        {
+          "name": "Add Dependencies to Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Dependencies added successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"app_id\": \"{{test_app_id}}\",\n  \"dependencies\": [\n    {\n      \"name\": \"lodash\",\n      \"version\": \"4.17.21\",\n      \"github_url\": \"https://github.com/lodash/lodash\"\n    },\n    {\n      \"name\": \"axios\",\n      \"version\": \"1.6.0\",\n      \"github_url\": \"https://github.com/axios/axios\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/add/dependencies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "add", "dependencies"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Dependencies",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Dependencies updated successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"app_id\": \"{{test_app_id}}\",\n  \"dependencies\": [\n    {\n      \"name\": \"lodash\",\n      \"version\": \"4.17.22\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/update/dependencies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "update", "dependencies"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Security Scanning",
+      "item": [
+        {
+          "name": "Scan Application for Vulnerabilities",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Scan completed', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{test_app_id}}/scan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "{{test_app_id}}", "scan"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manual Scan with File Upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Scan result contains vulnerabilities data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('dependencies');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "sample-files/package.json"
+                },
+                {
+                  "key": "runtime",
+                  "value": "nodejs",
+                  "type": "text"
+                },
+                {
+                  "key": "framework",
+                  "value": "express",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scan/dependencies",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scan", "dependencies"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {
+          "name": "Start Monitoring Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Monitoring started', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scan/{{test_app_id}}/start",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scan", "{{test_app_id}}", "start"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Monitoring Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Status response is valid', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scan/{{test_app_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scan", "{{test_app_id}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Stop Monitoring Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Monitoring stopped', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scan/{{test_app_id}}/stop",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scan", "{{test_app_id}}", "stop"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Remove Test Application",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Application removed successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('success');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{test_app_id}}/remove",
+              "host": ["{{base_url}}"],
+              "path": ["api", "applications", "{{test_app_id}}", "remove"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    }
+  ]
+}
