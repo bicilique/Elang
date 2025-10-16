@@ -135,3 +135,7 @@ run_tests.sh
 .env
 src/.env
 
+CONTRIBUTING.md
+.gitignore
+ARCHITECTURE.md
+CHANGES.md
