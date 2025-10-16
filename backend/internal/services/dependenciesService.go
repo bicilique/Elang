@@ -8,6 +8,7 @@ import (
 	"elang-backend/internal/model"
 	"elang-backend/internal/model/dto"
 	"elang-backend/internal/repository"
+	"elang-backend/internal/usecase"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -41,7 +42,7 @@ type JobProgress struct {
 type DependenciesService struct {
 	depedencyParserService helper.DependencyParser
 	cveService             *helper.CVEHelper
-	objectStorageService   ObjectStorageInterface
+	objectStorageService   usecase.ObjectStorageInterface
 	sharedScanner          *helper.SharedScanner
 
 	appRepository       repository.ApplicationRepository
@@ -55,7 +56,9 @@ type DependenciesService struct {
 	workerPool   chan struct{}                       // For controlling concurrency
 }
 
-func NewDependenciesService(basicRepo dto.BasicRepositories, objectStorageService ObjectStorageInterface, dependencyParser helper.DependencyParser) DependenciesInterface {
+func NewDependenciesService(basicRepo dto.BasicRepositories,
+	dependencyParser helper.DependencyParser,
+	objectStorageService usecase.ObjectStorageInterface) DependenciesInterface {
 	return &DependenciesService{
 		depedencyParserService: dependencyParser,
 		cveService:             helper.NewCVEHelper(),

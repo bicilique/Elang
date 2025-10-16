@@ -63,6 +63,38 @@ func NewDatabase(config Config) (*Database, error) {
 	return &Database{Connection: db}, nil
 }
 
+// AutoMigrate runs database migrations
+func (d *Database) AutoMigrate() error {
+	log.Println("🔄 Starting database migration...")
+
+	// Core entity migration
+	err := d.Connection.AutoMigrate(
+		&entity.App{},
+		&entity.Dependency{},
+		&entity.DependencyVersion{},
+		&entity.Framework{},
+		&entity.Runtime{},
+		&entity.AppDependency{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to migrate core entity: %w", err)
+	}
+	log.Println("✅ Core entity migrated successfully")
+
+	// Enhanced entity migration for Security Detector V2
+	err = d.Connection.AutoMigrate(
+		&entity.MonitoringJob{},
+		&entity.AuditTrail{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to migrate enhanced entity: %w", err)
+	}
+	log.Println("✅ Enhanced entity migrated successfully")
+
+	log.Println("✅ Database migration completed successfully")
+	return nil
+}
+
 // Seed seeds initial data into the database
 func (d *Database) Seed() {
 	runTimeTypes := []entity.Runtime{

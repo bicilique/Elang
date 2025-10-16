@@ -31,7 +31,6 @@ type Configurations struct {
 }
 
 func LoadConfigurations() *Configurations {
-
 	if os.Getenv("DEVELOPER_HOST") == "true" {
 		err := godotenv.Load()
 		if err != nil {

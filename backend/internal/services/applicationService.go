@@ -8,6 +8,7 @@ import (
 	"elang-backend/internal/model"
 	"elang-backend/internal/model/dto"
 	"elang-backend/internal/repository"
+	"elang-backend/internal/usecase"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -22,8 +23,8 @@ import (
 type ApplicationService struct {
 	depedencyParserService helper.DependencyParser
 	cveService             *helper.CVEHelper
-	githubApiService       GitHubAPIInterface
-	objectStorageService   ObjectStorageInterface
+	githubApiService       usecase.GitHubAPIInterface
+	objectStorageService   usecase.ObjectStorageInterface
 
 	// Add fields as necessary, e.g., database connection, logger, etc.
 	appRepository              repository.ApplicationRepository
@@ -36,12 +37,10 @@ type ApplicationService struct {
 }
 
 func NewApplicationService(basicRepo dto.BasicRepositories,
-	githubService GitHubAPIInterface,
 	dependencyParser helper.DependencyParser,
-	objectStorageService ObjectStorageInterface,
+	objectStorageService usecase.ObjectStorageInterface,
 ) ApplicationInterface {
 	return &ApplicationService{
-		githubApiService:       githubService,
 		objectStorageService:   objectStorageService,
 		depedencyParserService: dependencyParser,
 		cveService:             helper.NewCVEHelper(),
