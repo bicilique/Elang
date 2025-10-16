@@ -71,14 +71,23 @@ func (d *Database) AutoMigrate() error {
 	err := d.Connection.AutoMigrate(
 		&entity.App{},
 		&entity.Dependency{},
-		&entity.DependencyVersion{},
+
 		&entity.Framework{},
 		&entity.Runtime{},
-		&entity.AppDependency{},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to migrate core entity: %w", err)
 	}
+
+	// Additional entity migration
+	err = d.Connection.AutoMigrate(
+		&entity.AppDependency{},
+		&entity.DependencyVersion{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to migrate additional entity: %w", err)
+	}
+
 	log.Println("✅ Core entity migrated successfully")
 
 	// Enhanced entity migration for Security Detector V2

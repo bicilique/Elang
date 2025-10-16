@@ -3,7 +3,36 @@
 --  Adds persistent monitoring state, audit trail, and AI analysis support
 -- =========================
 
--- Original tables (runtime, framework, app) remain unchanged
+-- =========================
+--  Core Entity Tables (must be created first)
+-- =========================
+
+CREATE TABLE IF NOT EXISTS framework (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS runtime (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS app (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    runtime_id INT REFERENCES runtime(id),
+    framework_id INT REFERENCES framework(id),
+    description TEXT,
+    is_deleted BOOLEAN DEFAULT FALSE,
+    status TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =========================
+--  Enhanced Schema Tables
+-- =========================
+
 -- Enhanced dependencies table for better tracking
 CREATE TABLE IF NOT EXISTS dependencies (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

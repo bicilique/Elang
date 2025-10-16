@@ -23,7 +23,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: spd-db
+    container_name: elang-db
     env_file:
       - .env
     environment:
@@ -32,7 +32,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./data/database:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     ports:
       - "5432:5432"
@@ -44,7 +44,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - spd-network
+      - elang-network
 
   minio1:
     <<: *minio-common
@@ -54,7 +54,7 @@ services:
       - data1-2:/data2
     restart: unless-stopped
     networks:
-      - spd-network
+      - elang-network
 
   minio2:
     <<: *minio-common
@@ -64,7 +64,7 @@ services:
       - data2-2:/data2
     restart: unless-stopped
     networks:
-      - spd-network
+      - elang-network
 
   minio3:
     <<: *minio-common
@@ -74,7 +74,7 @@ services:
       - data3-2:/data2
     restart: unless-stopped
     networks:
-      - spd-network
+      - elang-network
 
   minio4:
     <<: *minio-common
@@ -84,7 +84,7 @@ services:
       - data4-2:/data2
     restart: unless-stopped
     networks:
-      - spd-network
+      - elang-network
 
   nginx:
     image: nginx:1.19.2-alpine
@@ -105,7 +105,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - spd-network
+      - elang-network
 
   # Elang Backend Application
   elang-backend:
@@ -122,16 +122,14 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_SSLMODE=${DB_SSLMODE}
-      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_USE_SSL=${MINIO_USE_SSL}
-      - MINIO_BUCKET=${MINIO_BUCKET}
-      - APP_PORT=${APP_PORT}
-      - GIN_MODE=${GIN_MODE}
+      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - STRORAGE_SSL=${STRORAGE_SSL}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - PORT=${PORT}
+      - MODE=${MODE}
     ports:
       - "8080:8080"
     depends_on:
@@ -149,7 +147,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - spd-network
+      - elang-network
 
   createbuckets:
     image: minio/mc
@@ -163,7 +161,7 @@ services:
       minio4:
         condition: service_healthy
     env_file:
-      - .env.minio
+      - .env
     entrypoint: >
       /bin/sh -c "
         until mc alias set myminio http://minio1:9000 minioadmin minioadmin; do
@@ -184,7 +182,7 @@ services:
         exit 0;
       "
     networks:
-      - spd-network
+      - elang-network
 
 
 volumes:
@@ -200,5 +198,5 @@ volumes:
     driver: local
 
 networks:
-  spd-network:
+  elang-network:
     driver: bridge

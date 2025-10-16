@@ -105,12 +105,24 @@ func initializeServices(repos *Repositories, log *logrus.Logger, cfg *Configurat
 		DepedencyVersionRepository: repos.DepedencyVersion,
 		RunTimeRepository:          repos.Runtime,
 		FrameWorkRepository:        repos.Framework,
+		AuditTrailRepository:       repos.AuditTrail,
 	}
 	dependencyParser := helper.NewDependencyParser()
 	objectStorageService := usecase.NewMinioUsecase(cfg.MINIO_ENDPOINT, cfg.MINIO_ACCESS_KEY, cfg.MINIO_SECRET_KEY, cfg.MINIO_BUCKET_NAME, cfg.MINIO_USE_SSL)
+
+	var githubApiService usecase.GitHubAPIInterface
+	if cfg.GITHUB_TOKEN != "" {
+		githubApiService = usecase.NewGitHubAPIusecase(cfg.GITHUB_TOKEN)
+	} else {
+		log.Warn("⚠️ GITHUB_TOKEN is not set. GitHub API service will have limited functionality due to rate limits.")
+		githubApiService = usecase.NewGitHubAPIusecase("") // Initialize with empty token for limited functionality
+	}
+
+	// githubApiService := usecase.NewGitHubAPIusecase(cfg.GITHUB_TOKEN)
+
 	return &Services{
 		ObjectStorageService: objectStorageService,
-		ApplicationService:   services.NewApplicationService(basicRepos, *dependencyParser, objectStorageService),
+		ApplicationService:   services.NewApplicationService(basicRepos, *dependencyParser, objectStorageService, githubApiService),
 		DepedenciesService:   services.NewDependenciesService(basicRepos, *dependencyParser, objectStorageService),
 	}
 }

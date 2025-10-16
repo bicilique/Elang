@@ -26,6 +26,9 @@ type Configurations struct {
 	MINIO_BUCKET_NAME string
 	MINIO_USE_SSL     bool
 
+	// GitHub API configuration
+	GITHUB_TOKEN string
+
 	// Messaging service configuration
 	MESSAGING_SERVICE_URL string
 }
@@ -57,6 +60,9 @@ func LoadConfigurations() *Configurations {
 		MINIO_SECRET_KEY:  getEnvWithDefault("STORAGE_SECRET_KEY", "minioadmin"),
 		MINIO_BUCKET_NAME: getEnvWithDefault("BUCKET_NAME", "silent-patch-detector"),
 		MINIO_USE_SSL:     getEnvWithDefault("STRORAGE_SSL", "false") == "true",
+
+		// GitHub API configuration
+		GITHUB_TOKEN: getEnvWithDefault("GITHUB_TOKEN", ""),
 
 		// Messaging service configuration
 		MESSAGING_SERVICE_URL: getEnvWithDefault("MESSAGING_SERVICE_URL", ""),

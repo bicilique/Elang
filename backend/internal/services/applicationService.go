@@ -39,11 +39,13 @@ type ApplicationService struct {
 func NewApplicationService(basicRepo dto.BasicRepositories,
 	dependencyParser helper.DependencyParser,
 	objectStorageService usecase.ObjectStorageInterface,
+	githubApiService usecase.GitHubAPIInterface,
 ) ApplicationInterface {
 	return &ApplicationService{
 		objectStorageService:   objectStorageService,
 		depedencyParserService: dependencyParser,
 		cveService:             helper.NewCVEHelper(),
+		githubApiService:       githubApiService,
 
 		appRepository:              basicRepo.AppRepository,
 		depedencyRepository:        basicRepo.DepedencyRepository,

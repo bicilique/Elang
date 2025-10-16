@@ -24,8 +24,37 @@ func NewGitHubAPIusecase(token string) GitHubAPIInterface {
 	}
 }
 
-// GetDefaultBranch fetches the default branch of a given repository using GitHub's GraphQL API.
+// GetDefaultBranch fetches the default branch of a given repository.
+// Uses REST API if no token is provided, otherwise uses GraphQL API.
 func (g *GithubAPIusecase) GetDefaultBranch(owner, repo string) (string, error) {
+	// If no token, use REST API instead of GraphQL
+	if g.Token == "" {
+		url := fmt.Sprintf("https://api.github.com/repos/%s/%s", owner, repo)
+		log.Println("Request URL:", url)
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return "", err
+		}
+		request.Header.Set("Accept", "application/vnd.github.v3+json")
+		resp, err := g.HTTPClient.Do(request)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		log.Println("Response Status:", resp.Status)
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("GitHub API returned status: %s", resp.Status)
+		}
+		var result struct {
+			DefaultBranch string `json:"default_branch"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			return "", err
+		}
+		return result.DefaultBranch, nil
+	}
+
+	// Use GraphQL API when token is available
 	query := fmt.Sprintf(`query { repository(owner: "%s", name: "%s") { defaultBranchRef { name } } }`, owner, repo)
 	resp, err := g.doGraphQLRequest(query)
 	if err != nil {
@@ -51,8 +80,65 @@ func (g *GithubAPIusecase) GetDefaultBranch(owner, repo string) (string, error) 
 	return result.Data.Repository.DefaultBranchRef.Name, nil
 }
 
-// GetListCommits fetches the list of commits for a given branch using GitHub's GraphQL API.
+// GetListCommits fetches the list of commits for a given branch.
+// Uses REST API if no token is provided, otherwise uses GraphQL API.
 func (g *GithubAPIusecase) GetListCommits(owner, repo, branch string) ([]map[string]interface{}, error) {
+	// If no token, use REST API instead of GraphQL
+	if g.Token == "" {
+		url := fmt.Sprintf("https://api.github.com/repos/%s/%s/commits?sha=%s&per_page=10", owner, repo, branch)
+		log.Println("Request URL:", url)
+		request, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+		request.Header.Set("Accept", "application/vnd.github.v3+json")
+		resp, err := g.HTTPClient.Do(request)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		log.Println("Response Status:", resp.Status)
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("GitHub API returned status: %s", resp.Status)
+		}
+		var rawCommits []struct {
+			SHA    string `json:"sha"`
+			Commit struct {
+				Message string `json:"message"`
+				Author  struct {
+					Name  string `json:"name"`
+					Email string `json:"email"`
+					Date  string `json:"date"`
+				} `json:"author"`
+				Committer struct {
+					Name  string `json:"name"`
+					Email string `json:"email"`
+					Date  string `json:"date"`
+				} `json:"committer"`
+			} `json:"commit"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&rawCommits); err != nil {
+			return nil, err
+		}
+		var commits []map[string]interface{}
+		for _, rc := range rawCommits {
+			commit := map[string]interface{}{
+				"oid":             rc.SHA,
+				"message":         rc.Commit.Message,
+				"author_name":     rc.Commit.Author.Name,
+				"author_email":    rc.Commit.Author.Email,
+				"author_date":     rc.Commit.Author.Date,
+				"committer_name":  rc.Commit.Committer.Name,
+				"committer_email": rc.Commit.Committer.Email,
+				"committer_date":  rc.Commit.Committer.Date,
+				"changed_files":   0, // REST API doesn't provide this in list view
+			}
+			commits = append(commits, commit)
+		}
+		return commits, nil
+	}
+
+	// Use GraphQL API when token is available
 	query := fmt.Sprintf(`query { repository(owner: "%s", name: "%s") { ref(qualifiedName: "%s") { target { ... on Commit { history(first: 10) { edges { node { oid message author { name email date } committer { name email date } changedFiles } } } } } } } }`, owner, repo, branch)
 	resp, err := g.doGraphQLRequest(query)
 	if err != nil {

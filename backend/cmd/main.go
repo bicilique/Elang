@@ -21,6 +21,12 @@ func main() {
 		panic(err)
 	}
 
+	// Run database migrations
+	if err := database.AutoMigrate(); err != nil {
+		panic(err)
+	}
+	database.Seed()
+
 	// Initialize logger
 	logger := config.NewLogger()
 

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build stage
-FROM golang:1.23.3-alpine AS builder
+FROM golang:tip-alpine3.21 AS builder
 WORKDIR /app
 
 # Install dependencies first (better caching)
@@ -18,17 +18,17 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o elang-app ./cmd/main.go
 
 # Run stage
-FROM alpine:latest
+FROM ubuntu:22.04
 
 # Update and install ca-certificates for HTTPS requests
-RUN apk update && apk upgrade && \
-    apk --no-cache add ca-certificates tzdata && \
-    rm -rf /var/cache/apk/*
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y ca-certificates tzdata wget && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 
 # Copy binary from builder stage
 COPY --from=builder /app/elang-app .

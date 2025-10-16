@@ -134,6 +134,8 @@ run_tests.sh
 
 .env
 src/.env
+data/*
+
 
 CONTRIBUTING.md
 .gitignore
