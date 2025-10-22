@@ -397,25 +397,6 @@ func (c *CVEHelper) convertOSVToVulnerabilityInfo(osvVuln OSVVulnerability, dep 
 	return vuln
 }
 
-// parseCVSSScore parses CVSS score string and returns severity and numeric score
-func (c *CVEHelper) parseCVSSScore(scoreString string) (CVESeverity, float64) {
-	// This is a simplified parser - in production, you'd want a full CVSS parser
-	if strings.Contains(strings.ToUpper(scoreString), "CRITICAL") {
-		return SeverityCritical, 9.0
-	}
-	if strings.Contains(strings.ToUpper(scoreString), "HIGH") {
-		return SeverityHigh, 7.0
-	}
-	if strings.Contains(strings.ToUpper(scoreString), "MEDIUM") {
-		return SeverityMedium, 5.0
-	}
-	if strings.Contains(strings.ToUpper(scoreString), "LOW") {
-		return SeverityLow, 3.0
-	}
-
-	return SeverityMedium, 5.0
-}
-
 // updateVulnerabilityStats updates statistics for a dependency result
 func (c *CVEHelper) updateVulnerabilityStats(result *DependencyVulnerabilityResult) {
 	result.TotalCount = len(result.Vulnerabilities)

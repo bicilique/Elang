@@ -28,7 +28,8 @@ func TestGitHubAPIUsecase_GetDefaultBranch(t *testing.T) {
 		assert.Equal(t, "/graphql", r.URL.Path)
 		assert.Equal(t, "POST", r.Method)
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(mockResponse)
+		err := json.NewEncoder(w).Encode(mockResponse)
+		require.NoError(t, err)
 	}))
 	defer server.Close()
 

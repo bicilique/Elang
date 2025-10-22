@@ -434,13 +434,3 @@ func generatePurl(runtime, owner, repo, name, version string) string {
 		return fmt.Sprintf("pkg:generic/%s@%s", name, version)
 	}
 }
-
-// findColon returns the index of the first colon, or -1
-func findColon(s string) int {
-	for i, c := range s {
-		if c == ':' {
-			return i
-		}
-	}
-	return -1
-}
