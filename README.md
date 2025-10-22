@@ -5,8 +5,12 @@
 ![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat&logo=go)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker)
+![CI/CD](https://img.shields.io/github/actions/workflow/status/your-org/elang/ci.yml?branch=main&label=CI/CD)
+![Docker Hub](https://img.shields.io/badge/Docker%20Hub-Available-2496ED?style=flat&logo=docker)
 
 **A powerful dependency security monitoring platform that tracks, analyzes, and alerts on security vulnerabilities in your application dependencies.**
+
+[Quick Start](DOCKER_QUICK_START.md) | [Documentation](README.md) | [Docker Hub Setup](DOCKER_HUB_SETUP.md)
 
 </div>
 
