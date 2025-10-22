@@ -24,23 +24,23 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
-      
-      minio:
-        image: minio/minio:latest
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 9000:9000
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    - name: Start MinIO
+      run: |
+        docker run -d \
+          --name minio \
+          -p 9000:9000 \
+          -e MINIO_ROOT_USER=minioadmin \
+          -e MINIO_ROOT_PASSWORD=minioadmin \
+          minio/minio server /data
+        
+        # Wait for MinIO to be ready
+        timeout 30 bash -c 'until curl -f http://localhost:9000/minio/health/live 2>/dev/null; do sleep 1; done'
+        echo "MinIO is ready"
     
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -105,6 +105,12 @@ jobs:
       working-directory: ./backend
       run: |
         go test ./test/... -race
+    
+    - name: Cleanup MinIO
+      if: always()
+      run: |
+        docker stop minio || true
+        docker rm minio || true
 
   lint:
     name: Lint
