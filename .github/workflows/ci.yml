@@ -8,7 +8,7 @@ on:
 
 env:
   GO_VERSION: '1.23'
-  DOCKER_IMAGE: elang-backend
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/elang
 
 jobs:
   # Backend tests
@@ -75,7 +75,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.DOCKER_IMAGE }}
+          images: ${{ env.DOCKER_IMAGE }}
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
