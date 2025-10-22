@@ -58,11 +58,6 @@ jobs:
     # Push to Docker Hub on push to main/develop branches
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
     
     steps:
       - name: Checkout code
@@ -99,35 +94,28 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-name: ${{ env.DOCKER_IMAGE }}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
-
   # Build Docker image (for PRs - no push)
-  build:
-    name: Build Docker Image (PR)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+  # build:
+  #   name: Build Docker Image (PR)
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'pull_request'
     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: ${{ env.DOCKER_IMAGE }}:pr-${{ github.event.pull_request.number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+  #     - name: Build Docker image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./Dockerfile
+  #         push: false
+  #         tags: ${{ env.DOCKER_IMAGE }}:pr-${{ github.event.pull_request.number }}
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
 
   # API Integration tests
   # test-api:

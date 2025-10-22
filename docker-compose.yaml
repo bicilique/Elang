@@ -25,7 +25,7 @@ services:
     image: postgres:15-alpine
     container_name: elang-db
     env_file:
-      - .env
+      - backend/.env
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
@@ -109,20 +109,18 @@ services:
 
   # Elang Backend Application
   elang-backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: afiffaizianur/elang:latest
     container_name: elang-backend
     env_file:
-      - .env
+      - backend/.env
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      - DB_HOST=postgres
+      - DB_PORT=5432
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_SSLMODE=${DB_SSLMODE}
-      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+      - STORAGE_ENDPOINT=nginx:9000
       - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
       - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
       - BUCKET_NAME=${BUCKET_NAME}
@@ -161,7 +159,7 @@ services:
       minio4:
         condition: service_healthy
     env_file:
-      - .env
+      - backend/.env
     entrypoint: >
       /bin/sh -c "
         until mc alias set myminio http://minio1:9000 minioadmin minioadmin; do
