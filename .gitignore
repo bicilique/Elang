@@ -145,3 +145,5 @@ PRE_DEPLOYMENT_CHECKLIST.md
 DOCKER_QUICK_START.md
 DOCKER_HUB_SETUP.md
 DEPLOYMENT_SUMMARY.md
+docker-compose copy.yaml
+nginx copy.conf

@@ -1,24 +1,5 @@
 version: '3.8'
 
-
-# Settings and configurations that are common for all containers
-x-minio-common: &minio-common
-  image: quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z
-  command: server --console-address ":9001" http://minio{1...4}/data{1...2}
-  expose:
-    - "9000"
-    - "9001"
-  environment:
-    MINIO_ROOT_USER: minioadmin
-    MINIO_ROOT_PASSWORD: minioadmin
-  healthcheck:
-    test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
-    interval: 5s
-    timeout: 5s
-    retries: 5
-
-
-
 services:
   # PostgreSQL Database
   postgres:
@@ -46,64 +27,25 @@ services:
     networks:
       - elang-network
 
-  minio1:
-    <<: *minio-common
-    hostname: minio1
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-02-28T09-55-16Z
+    container_name: elang-minio
+    hostname: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
     volumes:
-      - data1-1:/data1
-      - data1-2:/data2
-    restart: unless-stopped
-    networks:
-      - elang-network
-
-  minio2:
-    <<: *minio-common
-    hostname: minio2
-    volumes:
-      - data2-1:/data1
-      - data2-2:/data2
-    restart: unless-stopped
-    networks:
-      - elang-network
-
-  minio3:
-    <<: *minio-common
-    hostname: minio3
-    volumes:
-      - data3-1:/data1
-      - data3-2:/data2
-    restart: unless-stopped
-    networks:
-      - elang-network
-
-  minio4:
-    <<: *minio-common
-    hostname: minio4
-    volumes:
-      - data4-1:/data1
-      - data4-2:/data2
-    restart: unless-stopped
-    networks:
-      - elang-network
-
-  nginx:
-    image: nginx:1.19.2-alpine
-    hostname: nginx
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - minio_data:/data
     ports:
       - "9000:9000"
       - "9001:9001"
-    depends_on:
-      minio1:
-        condition: service_healthy
-      minio2:
-        condition: service_healthy
-      minio3:
-        condition: service_healthy
-      minio4:
-        condition: service_healthy
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - elang-network
 
@@ -120,7 +62,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=${DB_NAME}
       - DB_SSLMODE=${DB_SSLMODE}
-      - STORAGE_ENDPOINT=nginx:9000
+      - STORAGE_ENDPOINT=minio:9000
       - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
       - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
       - BUCKET_NAME=${BUCKET_NAME}
@@ -133,8 +75,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      nginx:
-        condition: service_started
+      minio:
+        condition: service_healthy
       createbuckets:
         condition: service_completed_successfully
     restart: unless-stopped
@@ -150,19 +92,13 @@ services:
   createbuckets:
     image: minio/mc
     depends_on:
-      minio1:
-        condition: service_healthy
-      minio2:
-        condition: service_healthy
-      minio3:
-        condition: service_healthy
-      minio4:
+      minio:
         condition: service_healthy
     env_file:
       - backend/.env
     entrypoint: >
       /bin/sh -c "
-        until mc alias set myminio http://minio1:9000 minioadmin minioadmin; do
+        until mc alias set myminio http://minio:9000 minioadmin minioadmin; do
           echo 'Waiting for MinIO...';
           sleep 2;
         done;
@@ -184,14 +120,7 @@ services:
 
 
 volumes:
-  data1-1:
-  data1-2:
-  data2-1:
-  data2-2:
-  data3-1:
-  data3-2:
-  data4-1:
-  data4-2:
+  minio_data:
   postgres_data:
     driver: local
 
